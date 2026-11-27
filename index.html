@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7dfe3">
+  <title>Для самой дорогой мамы</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Comfortaa:wght@400;600&family=Playfair+Display:ital,wght@0,500;1,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+
+  <style>
+    :root {
+      --pink: #f1cad1;
+      --pink-deep: #d99aa8;
+      --cream: #fffaf2;
+      --gold: #c59a5b;
+      --mint: #bcded4;
+      --ink: #4d4042;
+      --soft-white: rgba(255, 255, 255, 0.78);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      font-family: "Comfortaa", sans-serif;
+      background: var(--cream);
+      overflow-x: hidden;
+    }
+
+    body.locked { overflow: hidden; }
+    button { font: inherit; }
+
+    .section {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.7rem;
+      color: var(--gold);
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* Кнопка фоновой музыки */
+    .sound-button {
+      position: fixed;
+      z-index: 100;
+      right: 16px;
+      bottom: 16px;
+      width: 52px;
+      height: 52px;
+      border: 1px solid rgba(197, 154, 91, 0.35);
+      border-radius: 50%;
+      background: rgba(255, 250, 242, 0.92);
+      color: var(--ink);
+      box-shadow: 0 8px 30px rgba(105, 76, 82, 0.16);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .sound-button:hover { transform: scale(1.08); }
+    .sound-button.playing { background: var(--mint); }
+    .sound-button svg { width: 21px; height: 21px; }
+
+    /* ЭКРАН 1 — ОБЛОЖКА */
+    .intro {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      background:
+        linear-gradient(rgba(78, 58, 62, 0.42), rgba(78, 58, 62, 0.52)),
+        url("img/background.jfif") center/cover;
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    .intro.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(255, 250, 242, 0.45);
+      border-radius: 24px;
+    }
+
+    .intro-card {
+      position: relative;
+      z-index: 2;
+      width: min(88%, 620px);
+      text-align: center;
+      color: white;
+    }
+
+    .intro-card .eyebrow { color: #f5dcc1; }
+
+    .intro h1 {
+      margin: 0;
+      font-family: "Playfair Display", serif;
+      font-size: clamp(2.5rem, 10vw, 5.7rem);
+      font-weight: 500;
+      line-height: 1.05;
+      text-shadow: 0 5px 30px rgba(41, 29, 31, 0.25);
+    }
+
+    .intro h1 em {
+      display: block;
+      font-size: 0.62em;
+      font-weight: 600;
+    }
+
+    .open-button,
+    .next-button,
+    .surprise-button {
+      border: 0;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .open-button {
+      margin-top: 2.2rem;
+      padding: 16px 26px;
+      border: 1px solid rgba(255, 255, 255, 0.58);
+      border-radius: 999px;
+      background: rgba(255, 250, 242, 0.16);
+      color: white;
+      backdrop-filter: blur(8px);
+      animation: pulse 2.2s infinite;
+    }
+
+    .open-button:hover { transform: translateY(-3px); background: rgba(255,255,255,.24); }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.28); }
+      60% { box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+    }
+
+    /* ЭКРАН 2 — ГАЛЕРЕЯ */
+    .gallery {
+      background:
+        radial-gradient(circle at 15% 18%, rgba(255,255,255,.8) 0 2px, transparent 3px),
+        radial-gradient(circle at 82% 74%, rgba(197,154,91,.16) 0 3px, transparent 4px),
+        linear-gradient(135deg, #fffaf2 0%, #f8ecef 100%);
+      background-size: 38px 38px, 70px 70px, auto;
+      padding: 48px 16px;
+    }
+
+    .gallery-inner { width: 100%; max-width: 980px; text-align: center; }
+
+    .gallery h2,
+    .letter h2,
+    .final h2 {
+      margin: 0;
+      font-family: "Playfair Display", serif;
+      font-size: clamp(2.2rem, 8vw, 4.6rem);
+      font-weight: 500;
+    }
+
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: clamp(390px, 68vh, 590px);
+      margin-top: 20px;
+    }
+
+    .polaroid {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: min(78vw, 430px);
+      height: min(68vh, 500px);
+      padding: 12px 12px 54px;
+      border-radius: 3px;
+      background: #fff;
+      box-shadow: 0 22px 45px rgba(94, 72, 76, 0.18);
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(0deg) scale(.88);
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .polaroid.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 3;
+      transform: translate(-50%, -50%) rotate(-2deg) scale(1);
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: saturate(.88) contrast(.96);
+    }
+
+    .polaroid figcaption {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 7px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      font-family: "Caveat", cursive;
+      font-size: clamp(1.25rem, 5vw, 1.75rem);
+      color: #68565a;
+    }
+
+    .carousel-controls {
+      position: absolute;
+      z-index: 10;
+      left: 50%;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transform: translateX(-50%);
+    }
+
+    .arrow-button {
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(197,154,91,.28);
+      border-radius: 50%;
+      background: var(--soft-white);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(94,72,76,.08);
+    }
+
+    .carousel-counter { min-width: 44px; font-size: .82rem; color: var(--gold); }
+
+    /* ЭКРАН 3 — ПИСЬМО */
+    .letter {
+      background: linear-gradient(145deg, #dcebe6 0%, #fffaf2 52%, #f7e2e6 100%);
+      padding: 70px 16px;
+    }
+
+    .hearts-pattern {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .floating-heart {
+      position: absolute;
+      bottom: -30px;
+      color: rgba(217,154,168,.48);
+      animation: floatUp linear forwards;
+    }
+
+    @keyframes floatUp {
+      to { transform: translateY(-110svh) rotate(22deg); opacity: 0; }
+    }
+
+    .letter-card {
+      position: relative;
+      z-index: 2;
+      width: min(92%, 720px);
+      min-height: 420px;
+      padding: clamp(28px, 7vw, 58px);
+      border: 1px solid rgba(197,154,91,.24);
+      border-radius: 4px;
+      background: rgba(255, 252, 246, 0.88);
+      box-shadow: 0 20px 60px rgba(94,72,76,.12);
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .letter-card::before,
+    .letter-card::after {
+      content: "";
+      position: absolute;
+      width: 42px;
+      height: 42px;
+    }
+
+    .letter-card::before { top: 14px; left: 14px; border-top: 1px solid rgba(197,154,91,.5); border-left: 1px solid rgba(197,154,91,.5); }
+    .letter-card::after { right: 14px; bottom: 14px; border-right: 1px solid rgba(197,154,91,.5); border-bottom: 1px solid rgba(197,154,91,.5); }
+
+    .letter-text {
+      min-height: 170px;
+      margin: 25px 0 18px;
+      font-family: "Caveat", cursive;
+      font-size: clamp(1.45rem, 5.5vw, 2.05rem);
+      line-height: 1.42;
+      white-space: pre-line;
+    }
+
+    .next-button {
+      padding: 13px 22px;
+      border-radius: 999px;
+      background: var(--mint);
+      color: #4f6962;
+      box-shadow: 0 8px 20px rgba(91,137,125,.12);
+    }
+
+    .next-button:hover { transform: translateY(-2px); }
+
+    /* ЭКРАН 4 — ФИНАЛ */
+    .final {
+      background:
+        radial-gradient(circle at 50% 44%, rgba(255,255,255,.9), transparent 22%),
+        linear-gradient(135deg, #f8e7ea, #fffaf2 52%, #e5efea);
+      padding: 40px 16px;
+    }
+
+    .final-content { position: relative; z-index: 2; text-align: center; }
+    .final h2 { margin-top: 8px; }
+
+    .surprise-button {
+      position: relative;
+      margin-top: 28px;
+      padding: 18px 30px;
+      border-radius: 999px;
+      background: var(--pink-deep);
+      color: white;
+      box-shadow: 0 14px 34px rgba(192,127,142,.28);
+      font-weight: 600;
+    }
+
+    .surprise-button:hover { transform: scale(1.05); }
+
+    .love-reveal {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      width: 100%;
+      transform: translate(-50%, -50%) scale(.3);
+      opacity: 0;
+      pointer-events: none;
+      font-family: "Caveat", cursive;
+      font-size: clamp(3.8rem, 16vw, 8rem);
+      color: #b96e7d;
+      text-shadow: 0 8px 30px rgba(255,255,255,.8);
+      text-align: center;
+    }
+
+    .love-reveal .big-heart {
+      display: block;
+      color: #dc8295;
+      line-height: .8;
+      filter: drop-shadow(0 12px 18px rgba(176,96,112,.18));
+    }
+
+    /* След курсора */
+    .sparkle {
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      font-size: 12px;
+      transform: translate(-50%, -50%);
+      animation: sparkleOut .8s ease-out forwards;
+    }
+
+    @keyframes sparkleOut {
+      to { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(40deg); }
+    }
+
+    @media (min-width: 700px) {
+      .intro::after { inset: 28px; border-radius: 30px; }
+      .carousel { height: 570px; }
+      .polaroid { width: 440px; }
+      .gallery { padding: 70px 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .open-button { animation: none; }
+      .floating-heart { display: none; }
+    }
+  </style>
+</head>
+<body class="locked">
+
+  <!-- ЭКРАН 1: ОБЛОЖКА. Измените текст прямо внутри intro-card. -->
+  <section class="intro section" id="intro" aria-label="Обложка альбома">
+    <div class="intro-card">
+      <p class="eyebrow">Маленький альбом о большом чувстве</p>
+      <h1>Для самого<br><em>дорогого человека...</em></h1>
+      <button class="open-button" id="openAlbum" type="button">Открыть альбом ♥</button>
+    </div>
+  </section>
+
+  <!-- Кнопка фоновой музыки. Музыка запускается после первого действия пользователя. -->
+  <button class="sound-button" id="soundButton" type="button" aria-label="Включить музыку" title="Музыка">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5 6 9H2v6h4l5 4V5Z"/><path class="sound-waves" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="sound-waves" d="M18.5 5.5a9 9 0 0 1 0 13"/>
+    </svg>
+  </button>
+
+  <audio id="backgroundMusic" loop preload="auto">
+    <!-- Замените src на свою спокойную инструментальную мелодию или локальный файл mp3. -->
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- ЭКРАН 2: ГАЛЕРЕЯ ВОСПОМИНАНИЙ -->
+  <section class="section gallery" id="gallery">
+    <div class="gallery-inner">
+      <p class="eyebrow">Страницы воспоминаний</p>
+      <h2>Небольшой фотоальбом</h2>
+
+      <div class="carousel" id="carousel" aria-label="Карусель фотографий">
+        <!-- Замените src на ссылки своих фотографий. -->
+        <figure class="polaroid active">
+          <img src="img/mamavdetstve.jpg" alt="Маленькая мама">
+          <figcaption>Это ты маленькая</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/rybinsk.jpg" alt="Рыбинск">
+          <figcaption>Рыбинск</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/kazan2011.jpg" alt="Казань 2011">
+          <figcaption>Казань 2011</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/kazan2012.jpg" alt="Казань 2012">
+          <figcaption>Казань 2012</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/adler2012.jpg" alt="Адлер 2012">
+          <figcaption>Адлер 2012</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/turkey2013.jpg" alt="Турция 2013">
+          <figcaption>Турция 2013</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/tunis2014.jpg" alt="Тунис 2014">
+          <figcaption>Тунис 2014</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/kaliningrad.jpg" alt="Калининград 2016">
+          <figcaption>Калининград 2016</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/Moscow2019.jpg" alt="Москва 2019">
+          <figcaption>Москва 2019</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/tomoscow.jpg" alt="Москва 2020">
+          <figcaption>Едем в Москву 2020</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/chelyabinsk.jpg" alt="Челябинск 2025">
+          <figcaption>Челябинск 2025</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="img/dubai.jpg" alt="Дубай 2026">
+          <figcaption>Дубай 2026</figcaption>
+        </figure>
+
+        <div class="carousel-controls">
+          <button class="arrow-button" id="prevPhoto" type="button" aria-label="Предыдущее фото">←</button>
+          <span class="carousel-counter" id="counter">1 / 12</span>
+          <button class="arrow-button" id="nextPhoto" type="button" aria-label="Следующее фото">→</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 3: ИНТЕРАКТИВНОЕ ПИСЬМО -->
+  <section class="section letter" id="letter">
+    <div class="hearts-pattern" id="heartsPattern" aria-hidden="true"></div>
+    <div class="letter-card">
+      <p class="eyebrow">Особенные слова</p>
+      <h2>Для тебя</h2>
+      <div class="letter-text" id="letterText"></div>
+      <button class="next-button" id="typeButton" type="button">Прочитать письмо</button>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 4: ФИНАЛЬНЫЙ СЮРПРИЗ -->
+  <section class="section final" id="final">
+    <div class="final-content" id="finalContent">
+      <p class="eyebrow">Ещё один секрет</p>
+      <h2>Для тебя есть сюрприз</h2>
+      <button class="surprise-button" id="surpriseButton" type="button">Нажми меня ♥</button>
+    </div>
+    <div class="love-reveal" id="loveReveal" aria-live="polite">
+      <span class="big-heart">♥</span>
+      Я тебя так люблю, мой зайчик!
+    </div>
+  </section>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      // 1. Текст поздравления — замените строку ниже.
+      const letterContent = `Мамулькинс, ты у меня самое дорогое, что есть. И я это не просто так говорю. Спасибо тебе за всё: за доброту, за щедрость, за терпение. И за то, что в твоём сердце всегда находится место для меня, даже когда я этого не заслуживаю.
+
+Мне очень хочется вернуть тебе всё то добро, которое ты даришь. Правда. Постараться сделать всё возможное, чтобы ты чувствовала себя счастливой. И прости меня, если я тебя расстраиваю — ты этого точно не заслуживаешь. Ты заслуживаешь только самого наилучшего, и я желаю тебе именно этого!
+
+Обнимаю тебя крепко-крепко, безумно скучаю. Спасибо, что ты у меня есть!`;
+
+      const intro = document.getElementById("intro");
+      const openAlbum = document.getElementById("openAlbum");
+      const audio = document.getElementById("backgroundMusic");
+
+      // Плавное открытие альбома
+      openAlbum.addEventListener("click", () => {
+        intro.classList.add("is-hidden");
+        document.body.classList.remove("locked");
+
+        if (window.gsap) {
+          gsap.from("#gallery .gallery-inner", { y: 40, opacity: 0, duration: 1.2, delay: .45, ease: "power3.out" });
+        }
+
+        audio.volume = 0.32;
+        audio.play().then(() => updateSoundButton(true)).catch(() => updateSoundButton(false));
+
+        setTimeout(() => document.getElementById("gallery").scrollIntoView({ behavior: "smooth" }), 350);
+      });
+
+      // 2. Карусель полароидов
+      const photos = [...document.querySelectorAll(".polaroid")];
+      const counter = document.getElementById("counter");
+      let currentPhoto = 0;
+
+      function showPhoto(nextIndex) {
+        if (nextIndex === currentPhoto) return;
+
+        const oldPhoto = photos[currentPhoto];
+        const newPhoto = photos[nextIndex];
+
+        if (window.gsap) {
+          gsap.to(oldPhoto, {
+            opacity: 0,
+            scale: .82,
+            rotation: nextIndex > currentPhoto ? -12 : 12,
+            xPercent: nextIndex > currentPhoto ? -65 : 65,
+            duration: .45,
+            ease: "power2.in",
+            onComplete: () => oldPhoto.classList.remove("active")
+          });
+
+          newPhoto.classList.add("active");
+          gsap.fromTo(newPhoto,
+            { opacity: 0, scale: .8, rotation: nextIndex > currentPhoto ? 12 : -12, xPercent: -35 },
+            { opacity: 1, scale: 1, rotation: nextIndex % 2 ? 2 : -2, xPercent: -50, yPercent: -50, duration: .75, ease: "back.out(1.25)" }
+          );
+        } else {
+          oldPhoto.classList.remove("active");
+          newPhoto.classList.add("active");
+        }
+
+        currentPhoto = nextIndex;
+        counter.textContent = `${currentPhoto + 1} / ${photos.length}`;
+      }
+
+      document.getElementById("nextPhoto").addEventListener("click", () => {
+        showPhoto((currentPhoto + 1) % photos.length);
+      });
+
+      document.getElementById("prevPhoto").addEventListener("click", () => {
+        showPhoto((currentPhoto - 1 + photos.length) % photos.length);
+      });
+
+      // Свайпы для телефонов
+      let touchStartX = 0;
+      document.getElementById("carousel").addEventListener("touchstart", event => {
+        touchStartX = event.changedTouches[0].screenX;
+      }, { passive: true });
+
+      document.getElementById("carousel").addEventListener("touchend", event => {
+        const distance = event.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(distance) > 45) {
+          distance < 0
+            ? showPhoto((currentPhoto + 1) % photos.length)
+            : showPhoto((currentPhoto - 1 + photos.length) % photos.length);
+        }
+      }, { passive: true });
+
+      // 3. Эффект печатной машинки
+      const letterText = document.getElementById("letterText");
+      const typeButton = document.getElementById("typeButton");
+      let typing = false;
+
+      typeButton.addEventListener("click", () => {
+        if (typing) return;
+        typing = true;
+        typeButton.disabled = true;
+        typeButton.textContent = "С любовью...";
+        letterText.textContent = "";
+
+        let index = 0;
+        const timer = setInterval(() => {
+          letterText.textContent += letterContent[index];
+          index++;
+          if (index >= letterContent.length) {
+            clearInterval(timer);
+            typing = false;
+            typeButton.textContent = "Послание прочитано ♥";
+            setTimeout(() => document.getElementById("final").scrollIntoView({ behavior: "smooth" }), 1500);
+          }
+        }, 35);
+      });
+
+      // Летящие сердечки и цветы
+      const heartsPattern = document.getElementById("heartsPattern");
+      setInterval(() => {
+        if (document.hidden) return;
+        const heart = document.createElement("span");
+        heart.className = "floating-heart";
+        heart.textContent = Math.random() > .5 ? "♥" : "✿";
+        heart.style.left = `${Math.random() * 100}%`;
+        heart.style.fontSize = `${12 + Math.random() * 20}px`;
+        heart.style.animationDuration = `${5 + Math.random() * 5}s`;
+        heartsPattern.appendChild(heart);
+        setTimeout(() => heart.remove(), 10000);
+      }, 700);
+
+      // 4. Финальный сюрприз
+      const surpriseButton = document.getElementById("surpriseButton");
+      const loveReveal = document.getElementById("loveReveal");
+
+      surpriseButton.addEventListener("click", () => {
+        if (window.gsap) {
+          gsap.to("#finalContent", { opacity: 0, y: -20, scale: .9, duration: .5, ease: "power2.in" });
+          gsap.fromTo(loveReveal,
+            { opacity: 0, scale: .3, rotation: -8 },
+            { opacity: 1, scale: 1, rotation: 0, duration: 1.2, delay: .25, ease: "elastic.out(1, .55)" }
+          );
+        } else {
+          document.getElementById("finalContent").style.display = "none";
+          loveReveal.style.opacity = "1";
+          loveReveal.style.transform = "translate(-50%, -50%) scale(1)";
+        }
+
+        if (window.confetti) {
+          const colors = ["#f1cad1", "#c59a5b", "#bcded4", "#fffaf2", "#d99aa8"];
+          const end = Date.now() + 2800;
+
+          const frame = () => {
+            confetti({ particleCount: 5, angle: 60, spread: 65, origin: { x: 0, y: .72 }, colors });
+            confetti({ particleCount: 5, angle: 120, spread: 65, origin: { x: 1, y: .72 }, colors });
+            confetti({ particleCount: 3, spread: 360, startVelocity: 24, origin: { x: .5, y: .45 }, colors });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          };
+          frame();
+        }
+      });
+
+      // 5. Музыка: включение и выключение
+      const soundButton = document.getElementById("soundButton");
+
+      function updateSoundButton(isPlaying) {
+        soundButton.classList.toggle("playing", isPlaying);
+        soundButton.setAttribute("aria-label", isPlaying ? "Выключить музыку" : "Включить музыку");
+        soundButton.querySelectorAll(".sound-waves").forEach(wave => {
+          wave.style.display = isPlaying ? "block" : "none";
+        });
+      }
+
+      soundButton.addEventListener("click", () => {
+        if (audio.paused) {
+          audio.volume = .32;
+          audio.play().then(() => updateSoundButton(true)).catch(() => updateSoundButton(false));
+        } else {
+          audio.pause();
+          updateSoundButton(false);
+        }
+      });
+
+      // 6. След курсора
+      if (window.matchMedia("(pointer: fine)").matches) {
+        let lastSparkle = 0;
+        document.addEventListener("mousemove", event => {
+          const now = Date.now();
+          if (now - lastSparkle < 55) return;
+          lastSparkle = now;
+
+          const sparkle = document.createElement("span");
+          sparkle.className = "sparkle";
+          sparkle.textContent = Math.random() > .72 ? "♥" : "✦";
+          sparkle.style.left = `${event.clientX}px`;
+          sparkle.style.top = `${event.clientY}px`;
+          sparkle.style.color = Math.random() > .5 ? "#d99aa8" : "#c59a5b";
+          document.body.appendChild(sparkle);
+          setTimeout(() => sparkle.remove(), 820);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
